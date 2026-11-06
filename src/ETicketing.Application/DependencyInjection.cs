@@ -1,7 +1,10 @@
 using System.Reflection;
+using ETicketing.Application.Abstractions;
 using ETicketing.Application.Bookings;
 using ETicketing.Application.Orders;
+using ETicketing.Application.Payments;
 using ETicketing.Application.Tickets;
+using ETicketing.Application.Transactions;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -21,7 +24,11 @@ public static class DependencyInjection
 
         services.AddScoped<TicketQueryService>();
         services.AddScoped<OrderQueryService>();
+        services.AddScoped<TransactionQueryService>();
         services.AddScoped<BookingService>();
+        services.AddScoped<CheckoutService>();
+        services.AddScoped<PendingTransactionCreator>();
+        services.AddScoped<IPaymentHandlerResolver, PaymentHandlerResolver>();
 
         return services;
     }
