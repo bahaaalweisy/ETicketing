@@ -29,6 +29,7 @@ public static class DependencyInjection
         services.AddDbContext<AppDbContext>(options => options.UseSqlServer(connectionString));
         services.AddScoped<IAppDbContext>(provider => provider.GetRequiredService<AppDbContext>());
         services.AddScoped<ITicketInventory, TicketInventory>();
+        services.AddHealthChecks().AddDbContextCheck<AppDbContext>();
 
         services.AddSingleton<IPaymentQueue, PaymentQueue>();
         services.AddHostedService<QrPaymentProcessor>();
