@@ -1,4 +1,7 @@
 using System.Reflection;
+using ETicketing.Application.Bookings;
+using ETicketing.Application.Orders;
+using ETicketing.Application.Tickets;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -15,6 +18,10 @@ public static class DependencyInjection
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
         services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+
+        services.AddScoped<TicketQueryService>();
+        services.AddScoped<OrderQueryService>();
+        services.AddScoped<BookingService>();
 
         return services;
     }
