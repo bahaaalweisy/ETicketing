@@ -35,6 +35,7 @@ public static class DependencyInjection
         services.AddScoped<ILedgerService, LedgerService>();
 
         services.AddScoped<IPaymentHandler, CreditCardHandler>();
+        services.AddScoped<IPaymentHandler, QRHandler>();
 
         return services;
     }

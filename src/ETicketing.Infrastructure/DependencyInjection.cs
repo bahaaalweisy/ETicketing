@@ -1,6 +1,8 @@
 using ETicketing.Application.Abstractions;
 using ETicketing.Infrastructure.Inventory;
+using ETicketing.Infrastructure.Payments;
 using ETicketing.Infrastructure.Persistence;
+using ETicketing.Infrastructure.Reservations;
 using ETicketing.Infrastructure.Time;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -27,6 +29,12 @@ public static class DependencyInjection
         services.AddDbContext<AppDbContext>(options => options.UseSqlServer(connectionString));
         services.AddScoped<IAppDbContext>(provider => provider.GetRequiredService<AppDbContext>());
         services.AddScoped<ITicketInventory, TicketInventory>();
+
+        services.AddSingleton<IPaymentQueue, PaymentQueue>();
+        services.AddHostedService<QrPaymentProcessor>();
+
+        services.AddSingleton<ReservationExpiryService>();
+        services.AddHostedService(provider => provider.GetRequiredService<ReservationExpiryService>());
 
         return services;
     }
