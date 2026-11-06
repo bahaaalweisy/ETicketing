@@ -46,8 +46,10 @@ export default function App() {
     void loadTickets();
   }, [loadTickets]);
 
-  const selected = tickets.find((ticket) => ticket.id === ticketId);
+  const chosen = tickets.find((ticket) => ticket.id === ticketId);
+  const selected = chosen && chosen.available > 0 ? chosen : undefined;
   const maxQuantity = Math.min(MAX_QUANTITY, selected?.available ?? MAX_QUANTITY);
+  const orderQuantity = Math.min(quantity, maxQuantity);
 
   function selectTicket(ticket: Ticket) {
     setTicketId(ticket.id);
@@ -76,7 +78,7 @@ export default function App() {
     setError(null);
 
     try {
-      const order = await createBooking(selected.id, quantity, crypto.randomUUID());
+      const order = await createBooking(selected.id, orderQuantity, crypto.randomUUID());
       const payment = await checkout(order.id, method);
       const result = await waitForResult(payment.transactionId);
 
@@ -114,7 +116,7 @@ export default function App() {
             <dd>{new Date(transaction.completedAt!).toLocaleString()}</dd>
             <dt>Amount</dt>
             <dd>
-              {transaction.amount} {selected?.currency}
+              {transaction.amount} {chosen?.currency}
             </dd>
           </dl>
           <button className="primary" onClick={startOver}>
@@ -159,8 +161,8 @@ export default function App() {
           return (
             <button
               key={ticket.id}
-              className={`ticket ${ticket.id === ticketId ? "selected" : ""}`}
-              aria-pressed={ticket.id === ticketId}
+              className={`ticket ${ticket.id === selected?.id ? "selected" : ""}`}
+              aria-pressed={ticket.id === selected?.id}
               disabled={soldOut || isBusy}
               onClick={() => selectTicket(ticket)}
             >
@@ -178,7 +180,7 @@ export default function App() {
         <section className="panel">
           <label className="field">
             Quantity
-            <select value={quantity} disabled={isBusy} onChange={(event) => setQuantity(Number(event.target.value))}>
+            <select value={orderQuantity} disabled={isBusy} onChange={(event) => setQuantity(Number(event.target.value))}>
               {Array.from({ length: maxQuantity }, (_, index) => index + 1).map((value) => (
                 <option key={value} value={value}>
                   {value}
@@ -205,7 +207,7 @@ export default function App() {
           </fieldset>
 
           <p className="total">
-            Total: {selected.price * quantity} {selected.currency}
+            Total: {selected.price * orderQuantity} {selected.currency}
           </p>
 
           <button className="primary" disabled={isBusy} onClick={() => void handleCheckout()}>
