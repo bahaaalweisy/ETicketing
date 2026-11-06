@@ -2,9 +2,6 @@ using ETicketing.Domain.Common;
 
 namespace ETicketing.Domain.Entities;
 
-/// <summary>
-/// One side of a double-entry posting. Insert-only: it has no behaviour that changes it.
-/// </summary>
 public class LedgerEntry : AuditableEntity
 {
     private LedgerEntry()

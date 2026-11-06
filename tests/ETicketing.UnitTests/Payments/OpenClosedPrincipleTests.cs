@@ -12,10 +12,6 @@ using Moq;
 
 namespace ETicketing.UnitTests.Payments;
 
-/// <summary>
-/// Proves the Open/Closed claim: a new payment method plugs in through one DI registration,
-/// with no change to CheckoutService, the resolver or the existing handlers.
-/// </summary>
 public class OpenClosedPrincipleTests
 {
     private const PaymentMethod ApplePay = (PaymentMethod)99;

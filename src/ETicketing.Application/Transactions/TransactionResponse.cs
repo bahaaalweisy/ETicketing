@@ -3,9 +3,6 @@ using ETicketing.Domain.Enums;
 
 namespace ETicketing.Application.Transactions;
 
-/// <summary>
-/// Current state of a payment, polled by the frontend during a QR checkout.
-/// </summary>
 public sealed record TransactionResponse(
     TransactionStatus Status,
     Guid TransactionId,

@@ -3,9 +3,6 @@ using ETicketing.Domain.Enums;
 
 namespace ETicketing.Application.Payments.Handlers;
 
-/// <summary>
-/// Instant payment: the simulated gateway always approves, so it completes straight away.
-/// </summary>
 public sealed class CreditCardHandler(
     PendingTransactionCreator transactionCreator,
     IPaymentCompletionService completionService) : IPaymentHandler

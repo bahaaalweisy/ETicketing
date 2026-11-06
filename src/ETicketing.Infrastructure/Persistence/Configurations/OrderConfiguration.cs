@@ -4,10 +4,6 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace ETicketing.Infrastructure.Persistence.Configurations;
 
-/// <summary>
-/// Maps Orders. Status is a concurrency token: EF adds it to the UPDATE's WHERE clause, so
-/// a payment and the expiry job can never both move the same order out of PendingPayment.
-/// </summary>
 public sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
 {
     public void Configure(EntityTypeBuilder<Order> builder)

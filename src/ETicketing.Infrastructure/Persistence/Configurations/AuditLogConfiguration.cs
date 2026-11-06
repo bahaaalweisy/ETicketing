@@ -4,9 +4,6 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace ETicketing.Infrastructure.Persistence.Configurations;
 
-/// <summary>
-/// Maps AuditLogs, indexed by entity so the history of one record is cheap to read.
-/// </summary>
 public sealed class AuditLogConfiguration : IEntityTypeConfiguration<AuditLog>
 {
     public void Configure(EntityTypeBuilder<AuditLog> builder)

@@ -3,9 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ETicketing.Api.Controllers;
 
-/// <summary>
-/// Reads a single order.
-/// </summary>
 [ApiController]
 [Route("api/orders")]
 public sealed class OrdersController(OrderQueryService orderQueryService) : ControllerBase

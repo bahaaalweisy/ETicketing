@@ -12,9 +12,6 @@ using Testcontainers.MsSql;
 
 namespace ETicketing.IntegrationTests.Support;
 
-/// <summary>
-/// One real SQL Server container and one API host, shared by the whole test collection.
-/// </summary>
 public sealed class ApiFixture : IAsyncLifetime
 {
     public const int GoldTicketId = 1;
@@ -45,9 +42,6 @@ public sealed class ApiFixture : IAsyncLifetime
         await _sqlServer.DisposeAsync();
     }
 
-    /// <summary>
-    /// A second host on the same database, which behaves like the API after a restart.
-    /// </summary>
     public ApiFactory CreateFactory() => new(_sqlServer.GetConnectionString());
 
     public async Task<T> WithDbAsync<T>(Func<AppDbContext, Task<T>> action)
@@ -58,9 +52,6 @@ public sealed class ApiFixture : IAsyncLifetime
         return await action(db);
     }
 
-    /// <summary>
-    /// Puts a ticket into a known state, so every test is independent of the others.
-    /// </summary>
     public Task SetStockAsync(int ticketId, int sold = 0, int reserved = 0) =>
         WithDbAsync(db => db.Tickets
             .Where(ticket => ticket.Id == ticketId)
@@ -98,9 +89,6 @@ public sealed class ApiFixture : IAsyncLifetime
         (await Client.GetFromJsonAsync<T>(url, JsonOptions))!;
 }
 
-/// <summary>
-/// Tests in this collection run one at a time and share the fixture.
-/// </summary>
 [CollectionDefinition(Name)]
 public sealed class ApiCollection : ICollectionFixture<ApiFixture>
 {

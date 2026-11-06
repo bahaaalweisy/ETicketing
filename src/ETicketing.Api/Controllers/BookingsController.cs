@@ -4,9 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ETicketing.Api.Controllers;
 
-/// <summary>
-/// Creates bookings. The Idempotency-Key header makes the request safe to repeat.
-/// </summary>
 [ApiController]
 [Route("api/bookings")]
 public sealed class BookingsController(BookingService bookingService) : ControllerBase

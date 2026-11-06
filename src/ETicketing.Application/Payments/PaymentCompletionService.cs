@@ -7,10 +7,6 @@ using Microsoft.Extensions.Logging;
 
 namespace ETicketing.Application.Payments;
 
-/// <summary>
-/// The only place that finalises a payment, shared by every handler. All writes run in one
-/// database transaction, so a crash at any point leaves status, stock and ledger consistent.
-/// </summary>
 public sealed class PaymentCompletionService(
     IAppDbContext db,
     ITicketInventory inventory,
@@ -92,10 +88,6 @@ public sealed class PaymentCompletionService(
             .SingleOrDefaultAsync(transaction => transaction.Id == transactionId, cancellationToken)
         ?? throw new NotFoundException(nameof(Transaction), transactionId);
 
-    /// <summary>
-    /// Status is a concurrency token, so losing a race against another completion or the expiry
-    /// job throws and rolls back. Statuses are final, so one retry on fresh data settles it.
-    /// </summary>
     private async Task<TransactionStatus> RetryAfterConflictAsync(Guid transactionId, Func<Task<TransactionStatus>> action)
     {
         try

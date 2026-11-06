@@ -8,12 +8,6 @@ using Microsoft.Extensions.Options;
 
 namespace ETicketing.Infrastructure.Reservations;
 
-/// <summary>
-/// Runs every minute: marks unpaid orders past their reservation as Expired and releases their stock.
-/// An order with a recent Pending transaction is skipped, because that payment decides how the
-/// order ends. A Pending transaction older than the configured timeout is stuck, so it is failed,
-/// which releases the stock.
-/// </summary>
 public sealed class ReservationExpiryService(
     IServiceScopeFactory scopeFactory,
     IClock clock,
@@ -22,9 +16,6 @@ public sealed class ReservationExpiryService(
 {
     private static readonly TimeSpan Interval = TimeSpan.FromMinutes(1);
 
-    /// <summary>
-    /// Settles every order that is due, one database transaction per order.
-    /// </summary>
     public async Task ExpireDueOrdersAsync(CancellationToken cancellationToken)
     {
         using var scope = scopeFactory.CreateScope();

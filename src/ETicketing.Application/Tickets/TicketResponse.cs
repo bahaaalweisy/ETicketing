@@ -2,9 +2,6 @@ using ETicketing.Domain.Entities;
 
 namespace ETicketing.Application.Tickets;
 
-/// <summary>
-/// A ticket type with its current stock numbers.
-/// </summary>
 public sealed record TicketResponse(
     int Id,
     string Code,

@@ -5,9 +5,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ETicketing.Application.Transactions;
 
-/// <summary>
-/// Reads a single payment transaction.
-/// </summary>
 public sealed class TransactionQueryService(IAppDbContext db)
 {
     public async Task<TransactionResponse> GetByIdAsync(Guid id, CancellationToken cancellationToken)

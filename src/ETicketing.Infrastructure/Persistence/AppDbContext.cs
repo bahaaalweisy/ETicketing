@@ -9,11 +9,6 @@ using Microsoft.EntityFrameworkCore.Storage;
 
 namespace ETicketing.Infrastructure.Persistence;
 
-/// <summary>
-/// EF Core context. Besides mapping, it enforces three rules in one place for every save:
-/// nothing is hard-deleted, ledger and audit rows are insert-only, and every Order or
-/// Transaction status change writes an AuditLogs row in the same database transaction.
-/// </summary>
 public sealed class AppDbContext(DbContextOptions<AppDbContext> options, IClock clock)
     : DbContext(options), IAppDbContext
 {

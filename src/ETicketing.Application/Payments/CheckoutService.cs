@@ -7,10 +7,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ETicketing.Application.Payments;
 
-/// <summary>
-/// Strategy context: it applies the checkout rules and delegates the payment to whichever
-/// handler the resolver picks. It never names a concrete payment method.
-/// </summary>
 public sealed class CheckoutService(
     IAppDbContext db,
     IPaymentHandlerResolver handlerResolver,

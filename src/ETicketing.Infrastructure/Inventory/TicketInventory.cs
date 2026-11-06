@@ -4,10 +4,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ETicketing.Infrastructure.Inventory;
 
-/// <summary>
-/// Inventory Reservation Pattern. The stock check and the change happen in a single UPDATE:
-/// concurrent callers queue on the row lock, and whoever finds too little stock affects 0 rows.
-/// </summary>
 public sealed class TicketInventory(IAppDbContext db, IClock clock) : ITicketInventory
 {
     public async Task ReserveAsync(int ticketId, int quantity, CancellationToken cancellationToken)

@@ -3,10 +3,6 @@ using ETicketing.Domain.Enums;
 
 namespace ETicketing.Application.Payments.Handlers;
 
-/// <summary>
-/// Deferred payment: it only records and queues the transaction, so the HTTP request never
-/// waits for the customer to scan. A background service finishes the payment.
-/// </summary>
 public sealed class QRHandler(PendingTransactionCreator transactionCreator, IPaymentQueue paymentQueue) : IPaymentHandler
 {
     public PaymentMethod Method => PaymentMethod.QR;

@@ -10,16 +10,10 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace ETicketing.Infrastructure;
 
-/// <summary>
-/// Registers the Infrastructure layer's implementations with the DI container.
-/// </summary>
 public static class DependencyInjection
 {
     private const string ConnectionStringName = "DefaultConnection";
 
-    /// <summary>
-    /// Adds the implementations of the Application abstractions (persistence, queue, background services).
-    /// </summary>
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         var connectionString = configuration.GetConnectionString(ConnectionStringName)

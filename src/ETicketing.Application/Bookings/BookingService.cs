@@ -7,20 +7,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ETicketing.Application.Bookings;
 
-/// <summary>
-/// Creates an order and reserves its stock in one database transaction.
-/// </summary>
 public sealed class BookingService(
     IAppDbContext db,
     ITicketInventory inventory,
     IClock clock,
     IValidator<CreateBookingCommand> validator)
 {
-    /// <summary>
-    /// Books tickets. The same idempotency key always returns the same order. The order is
-    /// inserted before the stock is reserved so that a concurrent duplicate waits on the unique
-    /// index and receives the original order, instead of a false sold-out on the last seat.
-    /// </summary>
     public async Task<OrderResponse> CreateAsync(CreateBookingCommand command, CancellationToken cancellationToken)
     {
         await validator.ValidateAndThrowAsync(command, cancellationToken);

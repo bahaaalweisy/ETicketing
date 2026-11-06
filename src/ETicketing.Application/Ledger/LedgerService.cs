@@ -7,9 +7,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ETicketing.Application.Ledger;
 
-/// <summary>
-/// Owns the double-entry rules and nothing else.
-/// </summary>
 public sealed class LedgerService(IAppDbContext db) : ILedgerService
 {
     public async Task RecordTicketSaleAsync(Guid transactionId, decimal amount, CancellationToken cancellationToken)

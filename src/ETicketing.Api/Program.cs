@@ -36,7 +36,4 @@ await app.Services.InitialiseDatabaseAsync();
 
 await app.RunAsync();
 
-/// <summary>
-/// Exposes the entry point to WebApplicationFactory in the integration tests.
-/// </summary>
 public partial class Program;

@@ -3,9 +3,6 @@ using ETicketing.Domain.Enums;
 
 namespace ETicketing.Domain.Entities;
 
-/// <summary>
-/// A ledger account. Accounts are seeded reference data.
-/// </summary>
 public class Account : AuditableEntity
 {
     private Account()

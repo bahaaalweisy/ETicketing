@@ -4,9 +4,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ETicketing.Application.Bookings;
 
-/// <summary>
-/// Validates a booking: quantity range, a present key, and an existing active ticket.
-/// </summary>
 public sealed class CreateBookingCommandValidator : AbstractValidator<CreateBookingCommand>
 {
     public const int MinQuantity = 1;

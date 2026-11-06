@@ -4,10 +4,6 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace ETicketing.Infrastructure.Persistence.Configurations;
 
-/// <summary>
-/// Maps Transactions. The filtered unique index lets the database guarantee that an order
-/// has at most one live payment, so two checkouts can never charge the same order twice.
-/// </summary>
 public sealed class TransactionConfiguration : IEntityTypeConfiguration<Transaction>
 {
     public void Configure(EntityTypeBuilder<Transaction> builder)

@@ -4,9 +4,6 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace ETicketing.Infrastructure.Persistence.Configurations;
 
-/// <summary>
-/// Maps LedgerEntries. The CHECK constraint forces each row to be exactly one debit or one credit.
-/// </summary>
 public sealed class LedgerEntryConfiguration : IEntityTypeConfiguration<LedgerEntry>
 {
     public void Configure(EntityTypeBuilder<LedgerEntry> builder)

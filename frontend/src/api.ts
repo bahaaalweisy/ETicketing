@@ -34,7 +34,6 @@ interface Problem {
   errors?: Record<string, string[]>;
 }
 
-/** A non-success API response, carrying the HTTP status and a readable message. */
 export class ApiError extends Error {
   constructor(
     public readonly status: number,

@@ -3,9 +3,6 @@ using ETicketing.Domain.Enums;
 
 namespace ETicketing.Application.Orders;
 
-/// <summary>
-/// Summary of an order, returned by the booking and order endpoints.
-/// </summary>
 public sealed record OrderResponse(
     Guid Id,
     int TicketId,

@@ -4,9 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ETicketing.Api.Controllers;
 
-/// <summary>
-/// Exposes the ledger totals so anyone can verify that debits equal credits.
-/// </summary>
 [ApiController]
 [Route("api/ledger")]
 public sealed class LedgerController(ILedgerService ledgerService) : ControllerBase

@@ -2,10 +2,6 @@ using ETicketing.Domain.Common;
 
 namespace ETicketing.Domain.Entities;
 
-/// <summary>
-/// A ticket type and its stock. Reserved and Sold only change through atomic SQL updates,
-/// so they have no setters for business code to use.
-/// </summary>
 public class Ticket : AuditableEntity
 {
     private Ticket()

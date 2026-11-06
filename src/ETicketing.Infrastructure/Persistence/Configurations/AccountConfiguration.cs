@@ -6,9 +6,6 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace ETicketing.Infrastructure.Persistence.Configurations;
 
-/// <summary>
-/// Maps Accounts and seeds the two accounts of the double-entry ledger.
-/// </summary>
 public sealed class AccountConfiguration : IEntityTypeConfiguration<Account>
 {
     public void Configure(EntityTypeBuilder<Account> builder)

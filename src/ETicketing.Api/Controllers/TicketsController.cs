@@ -3,9 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ETicketing.Api.Controllers;
 
-/// <summary>
-/// Lists the ticket types and their stock.
-/// </summary>
 [ApiController]
 [Route("api/tickets")]
 public sealed class TicketsController(TicketQueryService ticketQueryService) : ControllerBase

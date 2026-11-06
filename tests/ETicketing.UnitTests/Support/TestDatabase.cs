@@ -5,10 +5,6 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace ETicketing.UnitTests.Support;
 
-/// <summary>
-/// Builds the real AppDbContext on the EF in-memory provider, with the seed data applied.
-/// Stock updates are mocked in unit tests; real SQL is covered by the integration tests.
-/// </summary>
 public static class TestDatabase
 {
     public const int GoldTicketId = 1;

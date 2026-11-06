@@ -4,9 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ETicketing.Api.Controllers;
 
-/// <summary>
-/// Starts a payment: 200 when it completed instantly, 202 when it continues in the background.
-/// </summary>
 [ApiController]
 [Route("api/checkout")]
 public sealed class CheckoutController(CheckoutService checkoutService) : ControllerBase

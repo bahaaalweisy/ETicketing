@@ -5,10 +5,6 @@ using Microsoft.Extensions.Logging;
 
 namespace ETicketing.Infrastructure.Persistence;
 
-/// <summary>
-/// Applies migrations, which include the seed data, on startup. It retries because the
-/// SQL Server container can accept connections some time after the API starts.
-/// </summary>
 public static class DatabaseInitializer
 {
     private const int MaxAttempts = 12;

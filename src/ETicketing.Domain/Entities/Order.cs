@@ -4,9 +4,6 @@ using ETicketing.Domain.Exceptions;
 
 namespace ETicketing.Domain.Entities;
 
-/// <summary>
-/// A customer booking. It owns the price calculation and the order state machine.
-/// </summary>
 public class Order : AuditableEntity
 {
     public static readonly TimeSpan ReservationWindow = TimeSpan.FromMinutes(10);
@@ -33,9 +30,6 @@ public class Order : AuditableEntity
 
     public DateTime ReservationExpiresAt { get; private set; }
 
-    /// <summary>
-    /// Creates an unpaid order at the current ticket price, reserved for <see cref="ReservationWindow"/>.
-    /// </summary>
     public static Order Create(Ticket ticket, int quantity, string idempotencyKey, DateTime utcNow) => new()
     {
         Id = Guid.NewGuid(),
@@ -48,9 +42,6 @@ public class Order : AuditableEntity
         ReservationExpiresAt = utcNow.Add(ReservationWindow)
     };
 
-    /// <summary>
-    /// Rejects the checkout unless the order is unpaid and its reservation is still valid.
-    /// </summary>
     public void EnsureCanCheckout(DateTime utcNow)
     {
         EnsurePendingPayment();

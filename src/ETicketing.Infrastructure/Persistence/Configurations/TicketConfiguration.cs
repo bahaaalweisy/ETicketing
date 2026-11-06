@@ -5,9 +5,6 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace ETicketing.Infrastructure.Persistence.Configurations;
 
-/// <summary>
-/// Maps Tickets. The CHECK constraints are the last line of defence against overselling.
-/// </summary>
 public sealed class TicketConfiguration : IEntityTypeConfiguration<Ticket>
 {
     private const string Aed = "AED";

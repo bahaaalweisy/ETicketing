@@ -3,10 +3,6 @@ using ETicketing.Domain.Enums;
 
 namespace ETicketing.Application.Payments;
 
-/// <summary>
-/// Outcome of a payment handler. It covers instant (Completed) and deferred (Pending) payments.
-/// TransactionId is null only when a Failed attempt never created a transaction.
-/// </summary>
 public sealed record PaymentResult(TransactionStatus Status, Guid? TransactionId, string? Reference, string Message)
 {
     public static PaymentResult Completed(Transaction transaction) =>

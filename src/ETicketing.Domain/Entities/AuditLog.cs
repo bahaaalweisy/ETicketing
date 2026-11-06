@@ -2,9 +2,6 @@ using ETicketing.Domain.Common;
 
 namespace ETicketing.Domain.Entities;
 
-/// <summary>
-/// Records one status change of an Order or a Transaction. FromStatus is null on creation.
-/// </summary>
 public class AuditLog : AuditableEntity
 {
     private AuditLog()

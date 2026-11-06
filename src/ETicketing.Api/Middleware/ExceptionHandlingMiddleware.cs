@@ -4,10 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ETicketing.Api.Middleware;
 
-/// <summary>
-/// Turns exceptions into consistent ProblemDetails responses and logs them. Unknown failures
-/// become a generic 500, so stack traces and internals never reach the client.
-/// </summary>
 public sealed class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
 {
     private const string ProblemContentType = "application/problem+json";

@@ -7,11 +7,6 @@ using Microsoft.Extensions.Logging;
 
 namespace ETicketing.Infrastructure.Payments;
 
-/// <summary>
-/// Simulates the 8-second QR confirmation outside any HTTP request. Each payment waits in its
-/// own task, so one QR never delays another. On startup it re-enqueues every Pending
-/// transaction, which is what makes a crash mid-wait harmless.
-/// </summary>
 public sealed class QrPaymentProcessor(
     IPaymentQueue paymentQueue,
     IServiceScopeFactory scopeFactory,

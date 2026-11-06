@@ -5,9 +5,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ETicketing.Application.Orders;
 
-/// <summary>
-/// Reads a single order.
-/// </summary>
 public sealed class OrderQueryService(IAppDbContext db)
 {
     public async Task<OrderResponse> GetByIdAsync(Guid id, CancellationToken cancellationToken)

@@ -4,9 +4,6 @@ using ETicketing.Domain.Exceptions;
 
 namespace ETicketing.Domain.Entities;
 
-/// <summary>
-/// One payment attempt for an order, with its own Pending to Completed or Failed state machine.
-/// </summary>
 public class Transaction : AuditableEntity
 {
     private Transaction()
