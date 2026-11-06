@@ -9,6 +9,7 @@ namespace ETicketing.Infrastructure.Reservations;
 
 /// <summary>
 /// Runs every minute: marks unpaid orders past their reservation as Expired and releases their stock.
+/// An order with a Pending transaction is skipped, because that payment decides how the order ends.
 /// </summary>
 public sealed class ReservationExpiryService(
     IServiceScopeFactory scopeFactory,
@@ -68,6 +69,15 @@ public sealed class ReservationExpiryService(
             var order = await db.Orders.SingleAsync(order => order.Id == orderId, cancellationToken);
             if (order.Status != OrderStatus.PendingPayment)
             {
+                return;
+            }
+
+            var hasPendingPayment = await db.Transactions.AnyAsync(
+                transaction => transaction.OrderId == orderId && transaction.Status == TransactionStatus.Pending,
+                cancellationToken);
+            if (hasPendingPayment)
+            {
+                logger.LogInformation("Order {OrderId} has a payment in progress, skipping it", orderId);
                 return;
             }
 
