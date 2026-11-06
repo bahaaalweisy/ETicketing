@@ -1,4 +1,5 @@
 using ETicketing.Application.Abstractions;
+using ETicketing.Infrastructure.Inventory;
 using ETicketing.Infrastructure.Persistence;
 using ETicketing.Infrastructure.Time;
 using Microsoft.EntityFrameworkCore;
@@ -25,6 +26,7 @@ public static class DependencyInjection
         services.AddSingleton<IClock, SystemClock>();
         services.AddDbContext<AppDbContext>(options => options.UseSqlServer(connectionString));
         services.AddScoped<IAppDbContext>(provider => provider.GetRequiredService<AppDbContext>());
+        services.AddScoped<ITicketInventory, TicketInventory>();
 
         return services;
     }
