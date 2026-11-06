@@ -216,7 +216,7 @@ Four mechanisms work together:
 1. **One database transaction.** `PaymentCompletionService.CompleteAsync` changes the transaction status, order status, stock and ledger entries inside a single `BeginTransactionAsync`. If the process dies before `COMMIT`, SQL Server rolls everything back. There is no state where stock moved but the ledger did not.
 2. **Idempotent completion.** `CompleteAsync` returns immediately if the transaction is no longer Pending, so retries and recovery are safe. `Status` is also an EF concurrency token, so two simultaneous completions cannot both succeed: the loser's `UPDATE` matches 0 rows, it rolls back and re-reads the final status.
 3. **Pending recovery on startup.** The queue is in memory, but it holds only ids. The truth is the Pending row in the database. When `QrPaymentProcessor` starts, it re-enqueues every Pending transaction.
-4. **Reservation expiry.** `ReservationExpiryService` runs every minute. It marks unpaid orders past `ReservationExpiresAt` as Expired and releases their stock, so abandoned or crashed checkouts cannot hold tickets forever.
+4. **Reservation expiry.** `ReservationExpiryService` runs every minute. It marks unpaid orders past `ReservationExpiresAt` as Expired and releases their stock, so abandoned checkouts cannot hold tickets forever. It skips an order with a Pending transaction, because that payment decides how the order ends.
 
 | Crash point | Result after restart |
 |---|---|
@@ -226,7 +226,7 @@ Four mechanisms work together:
 | Inside `CompleteAsync`, before commit | Rolled back to Pending, then recovery completes it. |
 | After commit | Already Completed, so nothing is repeated. |
 
-If a payment and the expiry job race for the same order, the concurrency token lets exactly one win. If expiry wins, the payment is marked Failed and neither stock nor ledger changes.
+A payment already in progress is never expired: it finishes even if the reservation ends during the wait. The only remaining race is a checkout whose Pending row lands in the instant after expiry has checked for one. The concurrency token still lets exactly one side win, and if expiry wins, the payment is marked Failed and neither stock nor ledger changes.
 
 The ledger itself is protected at several levels: `RecordTicketSaleAsync` writes exactly one debit and one credit, `EnsureBalancedAsync` throws `UnbalancedLedgerException` before commit if they differ, a CHECK constraint forces each row to be one-sided, and `GET /api/ledger/balance` lets anyone verify the totals.
 
@@ -332,7 +332,7 @@ That is all. `CheckoutService`, the controllers, the resolver and the existing h
 | In-process Channel queue | No broker needed, and the database keeps the queue recoverable. | Only suits a single API instance. |
 | Status as a concurrency token on Orders and Transactions | Reuses an existing column, with no extra `RowVersion`. | Losers must handle a concurrency exception. |
 | Auditing inside `SaveChangesAsync` | A status change cannot skip its audit row. | Bulk `ExecuteUpdate` bypasses it, so it is used for stock only. |
-| Expiry can beat a slow QR payment | Stock rules stay simple, and integrity always holds. | A QR started in the last 8 seconds of a reservation can fail. |
+| Expiry skips orders with a Pending transaction | A QR started near the end of a reservation still completes, so a customer who paid in time is not failed. | Stock stays reserved past the deadline until the payment ends. A Pending row that is not in the queue, such as a credit card request aborted mid-payment, holds its stock until the next restart runs recovery. |
 | `EnableRetryOnFailure` is off | It conflicts with explicit transactions. Startup has its own retry. | Transient runtime errors surface instead of retrying. |
 | `UpdatedAt` on insert-only tables | Keeps the "all tables" rule uniform. | On those tables it always equals `CreatedAt`. |
 
@@ -347,9 +347,10 @@ That is all. `CheckoutService`, the controllers, the resolver and the existing h
 
 ## 9. Setup, Swagger and tests
 
-**Prerequisite:** Docker Desktop. Then one command runs the database, API and frontend:
+**Prerequisite:** Docker Desktop. Create your local settings once, then one command runs the database, API and frontend:
 
 ```bash
+cp .env.example .env
 docker compose up --build
 ```
 
@@ -360,7 +361,7 @@ docker compose up --build
 | Health check | http://localhost:8080/health |
 | SQL Server | `localhost,14333` |
 
-Migrations and seed data are applied automatically on startup, with retries while SQL Server starts. The `SA_PASSWORD` environment variable overrides the default development password.
+Migrations and seed data are applied automatically on startup, with retries while SQL Server starts. The SQL Server password comes from `SA_PASSWORD` in `.env`, which git ignores. It is not stored in `appsettings.json` or `docker-compose.yml`, and Compose stops with a clear error if it is missing.
 
 ### API
 
@@ -380,11 +381,16 @@ Errors use ProblemDetails: 400 validation, 404 not found, 409 sold out or confli
 
 Requires the .NET 8 SDK and Node.js.
 
+`appsettings.json` has no connection string, so set one in your shell using the `SA_PASSWORD` value from `.env`. `dotnet ef` commands need the same variable.
+
 ```bash
 docker compose up -d sqlserver
+export ConnectionStrings__DefaultConnection='Server=localhost,14333;Database=ETicketing;User Id=sa;Password=<SA_PASSWORD>;TrustServerCertificate=True'
 dotnet run --project src/ETicketing.Api      # http://localhost:5080/swagger
 cd frontend && npm install && npm run dev    # http://localhost:5173
 ```
+
+In PowerShell, set it with `$env:ConnectionStrings__DefaultConnection = '...'`.
 
 ### Run the tests
 
