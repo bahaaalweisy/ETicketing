@@ -34,6 +34,7 @@ public static class DependencyInjection
         services.AddSingleton<IPaymentQueue, PaymentQueue>();
         services.AddHostedService<QrPaymentProcessor>();
 
+        services.Configure<ReservationExpiryOptions>(configuration.GetSection(ReservationExpiryOptions.SectionName));
         services.AddSingleton<ReservationExpiryService>();
         services.AddHostedService(provider => provider.GetRequiredService<ReservationExpiryService>());
 

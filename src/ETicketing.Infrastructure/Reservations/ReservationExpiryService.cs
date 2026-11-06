@@ -4,28 +4,33 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace ETicketing.Infrastructure.Reservations;
 
 /// <summary>
 /// Runs every minute: marks unpaid orders past their reservation as Expired and releases their stock.
-/// An order with a Pending transaction is skipped, because that payment decides how the order ends.
+/// An order with a recent Pending transaction is skipped, because that payment decides how the
+/// order ends. A Pending transaction older than the configured timeout is stuck, so it is failed,
+/// which releases the stock.
 /// </summary>
 public sealed class ReservationExpiryService(
     IServiceScopeFactory scopeFactory,
     IClock clock,
+    IOptions<ReservationExpiryOptions> options,
     ILogger<ReservationExpiryService> logger) : BackgroundService
 {
     private static readonly TimeSpan Interval = TimeSpan.FromMinutes(1);
 
     /// <summary>
-    /// Expires every order that is due, one database transaction per order.
+    /// Settles every order that is due, one database transaction per order.
     /// </summary>
     public async Task ExpireDueOrdersAsync(CancellationToken cancellationToken)
     {
         using var scope = scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<IAppDbContext>();
         var inventory = scope.ServiceProvider.GetRequiredService<ITicketInventory>();
+        var completionService = scope.ServiceProvider.GetRequiredService<IPaymentCompletionService>();
         var utcNow = clock.UtcNow;
 
         var dueOrderIds = await db.Orders
@@ -35,7 +40,24 @@ public sealed class ReservationExpiryService(
 
         foreach (var orderId in dueOrderIds)
         {
-            await ExpireOrderAsync(db, inventory, orderId, cancellationToken);
+            var pendingPayment = await db.Transactions
+                .Where(transaction => transaction.OrderId == orderId && transaction.Status == TransactionStatus.Pending)
+                .Select(transaction => new { transaction.Id, transaction.CreatedAt })
+                .SingleOrDefaultAsync(cancellationToken);
+
+            if (pendingPayment is null)
+            {
+                await ExpireOrderAsync(db, inventory, orderId, cancellationToken);
+            }
+            else if (utcNow - pendingPayment.CreatedAt >= options.Value.PendingPaymentTimeout)
+            {
+                logger.LogWarning("Transaction {TransactionId} is stuck in Pending, failing it", pendingPayment.Id);
+                await completionService.FailAsync(pendingPayment.Id, cancellationToken);
+            }
+            else
+            {
+                logger.LogInformation("Order {OrderId} has a payment in progress, skipping it", orderId);
+            }
         }
     }
 
@@ -69,15 +91,6 @@ public sealed class ReservationExpiryService(
             var order = await db.Orders.SingleAsync(order => order.Id == orderId, cancellationToken);
             if (order.Status != OrderStatus.PendingPayment)
             {
-                return;
-            }
-
-            var hasPendingPayment = await db.Transactions.AnyAsync(
-                transaction => transaction.OrderId == orderId && transaction.Status == TransactionStatus.Pending,
-                cancellationToken);
-            if (hasPendingPayment)
-            {
-                logger.LogInformation("Order {OrderId} has a payment in progress, skipping it", orderId);
                 return;
             }
 

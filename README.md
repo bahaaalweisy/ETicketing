@@ -216,7 +216,7 @@ Four mechanisms work together:
 1. **One database transaction.** `PaymentCompletionService.CompleteAsync` changes the transaction status, order status, stock and ledger entries inside a single `BeginTransactionAsync`. If the process dies before `COMMIT`, SQL Server rolls everything back. There is no state where stock moved but the ledger did not.
 2. **Idempotent completion.** `CompleteAsync` returns immediately if the transaction is no longer Pending, so retries and recovery are safe. `Status` is also an EF concurrency token, so two simultaneous completions cannot both succeed: the loser's `UPDATE` matches 0 rows, it rolls back and re-reads the final status.
 3. **Pending recovery on startup.** The queue is in memory, but it holds only ids. The truth is the Pending row in the database. When `QrPaymentProcessor` starts, it re-enqueues every Pending transaction.
-4. **Reservation expiry.** `ReservationExpiryService` runs every minute. It marks unpaid orders past `ReservationExpiresAt` as Expired and releases their stock, so abandoned checkouts cannot hold tickets forever. It skips an order with a Pending transaction, because that payment decides how the order ends.
+4. **Reservation expiry.** `ReservationExpiryService` runs every minute. It marks unpaid orders past `ReservationExpiresAt` as Expired and releases their stock, so abandoned checkouts cannot hold tickets forever. It skips an order whose Pending transaction is younger than `ReservationExpiry:PendingPaymentTimeout` (2 minutes by default), because that payment decides how the order ends. An older Pending transaction is stuck, for example a credit card request aborted mid-payment, so it goes through `FailAsync`, which fails the order and releases the stock.
 
 | Crash point | Result after restart |
 |---|---|
@@ -226,7 +226,7 @@ Four mechanisms work together:
 | Inside `CompleteAsync`, before commit | Rolled back to Pending, then recovery completes it. |
 | After commit | Already Completed, so nothing is repeated. |
 
-A payment already in progress is never expired: it finishes even if the reservation ends during the wait. The only remaining race is a checkout whose Pending row lands in the instant after expiry has checked for one. The concurrency token still lets exactly one side win, and if expiry wins, the payment is marked Failed and neither stock nor ledger changes.
+A payment in progress is not expired: it finishes even if the reservation ends during the wait, as long as it finishes within the timeout. The only remaining race is a checkout whose Pending row lands in the instant after expiry has checked for one. The concurrency token still lets exactly one side win, and if expiry wins, the payment is marked Failed and neither stock nor ledger changes.
 
 The ledger itself is protected at several levels: `RecordTicketSaleAsync` writes exactly one debit and one credit, `EnsureBalancedAsync` throws `UnbalancedLedgerException` before commit if they differ, a CHECK constraint forces each row to be one-sided, and `GET /api/ledger/balance` lets anyone verify the totals.
 
@@ -332,7 +332,7 @@ That is all. `CheckoutService`, the controllers, the resolver and the existing h
 | In-process Channel queue | No broker needed, and the database keeps the queue recoverable. | Only suits a single API instance. |
 | Status as a concurrency token on Orders and Transactions | Reuses an existing column, with no extra `RowVersion`. | Losers must handle a concurrency exception. |
 | Auditing inside `SaveChangesAsync` | A status change cannot skip its audit row. | Bulk `ExecuteUpdate` bypasses it, so it is used for stock only. |
-| Expiry skips orders with a Pending transaction | A QR started near the end of a reservation still completes, so a customer who paid in time is not failed. | Stock stays reserved past the deadline until the payment ends. A Pending row that is not in the queue, such as a credit card request aborted mid-payment, holds its stock until the next restart runs recovery. |
+| Expiry skips recent Pending transactions and fails old ones | A QR started near the end of a reservation still completes, and a stuck payment cannot hold stock forever. | Stock can stay reserved up to the timeout past the deadline. The timeout must stay well above the 8-second QR wait, or live payments would be failed. A real gateway would need a status check before failing a payment, because this one could have taken the money. |
 | `EnableRetryOnFailure` is off | It conflicts with explicit transactions. Startup has its own retry. | Transient runtime errors surface instead of retrying. |
 | `UpdatedAt` on insert-only tables | Keeps the "all tables" rule uniform. | On those tables it always equals `CreatedAt`. |
 
